@@ -3,7 +3,9 @@ export default defineNuxtConfig({
   modules: [
     '@unocss/nuxt',
     '@nuxt/eslint',
+    'nuxt-monaco-editor',
   ],
+  ssr: true,
   devtools: { enabled: false },
   app: {
     head: {
@@ -45,6 +47,14 @@ export default defineNuxtConfig({
   eslint: {
     config: {
       stylistic: true,
+    },
+  },
+  monacoEditor: {
+    locale: 'en',
+    
+    componentName: {
+      codeEditor: 'TypeJsonEditor',
+      diffEditor: 'TypeJsonDiffEditor',
     },
   },
   unocss: {
