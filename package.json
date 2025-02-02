@@ -12,6 +12,7 @@
     "stage": "npm run lint && npm run build && git add ."
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@iconify-json/hugeicons": "^1.2.3",
     "@nuxt/eslint": "^1.0.0",
     "@unocss/eslint-config": "^65.4.3",
