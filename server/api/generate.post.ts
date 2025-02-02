@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof GoogleGenerativeAIError) {
       return sendError(event, createError({
         statusCode: 500,
-        statusMessage: error.message,
+        statusMessage: 'AI Service Error',
       }))
     }
     return sendError(event, handleError(error))

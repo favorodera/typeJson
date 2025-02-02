@@ -92,6 +92,7 @@
         </button>
 
       </div>
+
       <textarea
         id="instruction"
         ref="instructionTextarea"
@@ -102,6 +103,16 @@
         class="max-h-25 resize-none overflow-y-auto b b-white rounded-lg bg-transparent p-2 text-sm outline-none placeholder-text-white/70"
         @input="textareaAutoGrow"
       />
+
+      <div
+        v-if="error"
+        class="flex items-center gap-2 text-sm text-red-500"
+      >
+        <span class="i-hugeicons:alert-01" />
+        <p>
+          {{ error.message.split(':')[1].split('0')[2] }}
+        </p>
+      </div>
 
     </div>
 
@@ -228,7 +239,7 @@ const instructionTextarea = ref<HTMLTextAreaElement>()
 const isCopied = ref(false)
 const isExpanded = ref(false)
 
-const { data: output, execute, status } = await useLazyAsyncData(
+const { data: output, execute, status, error } = await useLazyAsyncData(
   'generate',
   () => $fetch('/api/generate', {
     body: {
