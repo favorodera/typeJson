@@ -112,7 +112,7 @@ export default defineEventHandler(async (event) => {
     // Validate that instruction doesn't request same-format conversion
     if (instruction) {
       const forbiddenPattern = isJson
-        ? /(generate|create|convert|output|make|need|run)\s+(json|mock|mocks|data|dummy)/i
+        ? /(generate|create|convert|output|make|need|run)\s+(json|mock|data|dummy)/i
         : /(generate|create|convert|output|make|need|run)\s+(typescript|type|interface|ts|dummy|mock)/i
 
       if (forbiddenPattern.test(instruction)) {

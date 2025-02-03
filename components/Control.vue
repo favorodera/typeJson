@@ -14,6 +14,7 @@
         class="w-max flex items-center gap-1 rounded-md px-2 py-1 duration-500 ease property-all active:scale-90 hover:bg-white hover:text-black"
         @click="() => {
           typeOrJson = ''
+          clear()
           isJson = !isJson
         }"
       >
@@ -119,6 +120,7 @@
           name="instruction"
           placeholder="Instruction"
           rows="1"
+          :disabled="status === 'pending'"
           class="max-h-25 grow-1 resize-none overflow-y-auto bg-transparent py-2 pr-2 text-sm outline-none placeholder-text-white/70"
           @input="textareaAutoGrow"
         />
@@ -265,7 +267,7 @@ const tempInstruction = ref<string>()
 const hasEditorErrors = ref(false)
 const monaco = useMonaco()
 
-const { data: output, execute, status, error } = await useLazyAsyncData(
+const { data: output, execute, status, error, clear } = await useLazyAsyncData(
   'generate',
   () => $fetch('/api/generate', {
     body: {
@@ -314,8 +316,9 @@ onMounted(async () => {
 watch(status, (newStatus) => {
 
   if (newStatus === 'pending') {
-    tempInstruction.value = instruction.value
 
+    tempInstruction.value = instruction.value
+    instruction.value = undefined
   }
   else if (newStatus === 'error') {
     instruction.value = tempInstruction.value
