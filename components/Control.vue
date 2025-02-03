@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.message.replace('[POST] "/api/generate":', '').replace(/400|500|<no response>/, '') }}
+          {{ formatErrorMessage(error.message) }}
         </p>
       </div>
 
@@ -298,6 +298,10 @@ const disableActionButton = computed(() =>
   || (!instruction.value && !typeOrJson.value)
   || hasEditorErrors.value,
 )
+
+function formatErrorMessage(errorMessage: string) {
+  return errorMessage.replace(/\[POST\] "\/api\/generate":/, '').replace(/400|500|<no response>/, '')
+}
 
 function textareaAutoGrow() {
   if (!instructionTextarea.value) return
