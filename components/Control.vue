@@ -5,7 +5,7 @@
     @click="isExpanded = false"
   />
   
-  <section class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,25rem),1fr))] items-center justify-center gap-8">
+  <section class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,25rem),1fr))] gap-8">
    
     <div class="flex flex-col gap-2">
       
@@ -49,7 +49,10 @@
             autoDetectHighContrast: false,
             scrollBeyondLastColumn: 0,
             scrollBeyondLastLine: false,
-            overviewRulerLanes: 0,
+            overviewRulerLanes: 1,
+            stickyScroll: {
+              enabled: false,
+            },
             scrollbar: {
               horizontal: 'hidden',
               vertical: 'hidden',
@@ -75,34 +78,52 @@
           </p>
         </div>
 
-        <button
-          type="button"
-          class="w-max self-end b b-white rounded-md px-2 py-1 duration-500 ease property-all active:scale-90 hover:bg-white hover:text-black"
-          @click="execute()"
-        >
+        <div class="w-full flex items-end justify-between gap-2">
 
-          <span
-            v-if="status === 'pending'"
-            class="i-hugeicons:reload size-4 animate-spin"
-          />
+          <div
+            v-if="hasEditorErrors"
+            class="flex items-center gap-2 text-xs text-red-500"
+          >
+            <span class="i-hugeicons:alert-01 shrink-0" />
+            <p>Errors in codebase</p>
+          </div>
 
-          {{
-            instruction && status !== 'pending' ? 'Send' : status === 'pending' ? 'Generating...' : 'Generate'
-          }}
-        </button>
+          <button
+            type="button"
+            :disabled="disableActionButton"
+            class="ml-auto w-max b b-white rounded-md px-2 py-1 duration-500 ease property-all active:scale-90 disabled:cursor-not-allowed hover:bg-white hover:text-black"
+            @click="execute()"
+          >
+
+            <span
+              v-if="status === 'pending'"
+              class="i-hugeicons:reload size-4 animate-spin"
+            />
+
+            {{
+              instruction && status !== 'pending' ? 'Send' : status === 'pending' ? 'Generating...' : 'Generate'
+            }}
+          </button>
+        </div>
 
       </div>
 
-      <textarea
-        id="instruction"
-        ref="instructionTextarea"
-        v-model="instruction"
-        name="instruction"
-        placeholder="Instruction"
-        rows="1"
-        class="max-h-25 resize-none overflow-y-auto b b-white rounded-lg bg-transparent p-2 text-sm outline-none placeholder-text-white/70"
-        @input="textareaAutoGrow"
-      />
+      <div class="flex items-start gap-2 b b-white rounded-lg pl-2">
+
+        <span class="i-hugeicons:bot mt-2 size-6" />
+
+        <textarea
+          id="instruction"
+          ref="instructionTextarea"
+          v-model="instruction"
+          name="instruction"
+          placeholder="Instruction"
+          rows="1"
+          class="max-h-25 grow-1 resize-none overflow-y-auto bg-transparent py-2 pr-2 text-sm outline-none placeholder-text-white/70"
+          @input="textareaAutoGrow"
+        />
+
+      </div>
 
       <div
         v-if="error"
@@ -188,6 +209,9 @@
           theme: 'hc-black',
           readOnly: true,
           matchBrackets: 'never',
+          stickyScroll: {
+            enabled: false,
+          },
           placeholder: `Nothing to show yet... Generate ${isJson ? 'Types' : 'Data'}.`,
           minimap: {
             enabled: false,
@@ -231,26 +255,34 @@
 </template>
 
 <script setup lang="ts">
-
 const typeOrJson = ref<string>()
 const instruction = ref<string>()
 const isJson = ref(false)
 const instructionTextarea = ref<HTMLTextAreaElement>()
 const isCopied = ref(false)
 const isExpanded = ref(false)
+const tempInstruction = ref<string>()
+const hasEditorErrors = ref(false)
+const monaco = useMonaco()
 
 const { data: output, execute, status, error } = await useLazyAsyncData(
   'generate',
   () => $fetch('/api/generate', {
     body: {
       isJson: isJson.value,
-      rawData: typeOrJson.value,
+      rawData: `\`\`\`${isJson.value ? 'json' : 'ts'}\n${typeOrJson.value}\n\`\`\``,
       instruction: instruction.value,
     },
     method: 'POST',
     timeout: 30000,
   }),
   { server: false, immediate: false },
+)
+
+const disableActionButton = computed(() =>
+  (status.value === 'pending')
+  || (!instruction.value && !typeOrJson.value)
+  || hasEditorErrors.value,
 )
 
 function textareaAutoGrow() {
@@ -265,6 +297,31 @@ function copyOutput() {
   isCopied.value = true
   setTimeout(() => isCopied.value = false, 2000)
 }
+
+onMounted(async () => {
+  const editor = monaco?.editor
+  
+  const disposable = editor?.onDidChangeMarkers(() => {
+    const markers = editor?.getModelMarkers({})
+    hasEditorErrors.value = markers.some(marker =>
+      marker.severity === monaco?.MarkerSeverity.Error,
+    )
+  })
+
+  onBeforeUnmount(() => disposable?.dispose())
+})
+
+watch(status, (newStatus) => {
+
+  if (newStatus === 'pending') {
+    tempInstruction.value = instruction.value
+
+  }
+  else if (newStatus === 'error') {
+    instruction.value = tempInstruction.value
+
+  }
+})
 
 </script>
 

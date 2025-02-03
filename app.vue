@@ -1,9 +1,11 @@
 <template>
-  <main class="w-full flex flex-auto flex-col justify-center gap-12 ">
+  <main class="w-full flex flex-auto flex-col justify-center gap-12">
 
     <Header />
 
     <Control />
+
+    <Footer />
 
   </main>
 </template>
