@@ -34,7 +34,7 @@
       <div class="min-h-md flex flex-auto flex-col justify-between gap-4 b b-white rounded-lg p-4">
 
         <TypeJsonEditor
-          v-if="useMonaco()"
+          v-if="monaco"
           v-model="typeOrJson"
           :lang="isJson ? 'json' : 'typescript'"
           :options="{
@@ -204,8 +204,8 @@
       </div>
 
       <TypeJsonEditor
-        v-if="useMonaco()"
-        v-model="output as string | undefined"
+        v-if="output"
+        v-model="output"
         :lang="isJson ? 'typescript' : 'json'"
         :options="{
           theme: 'hc-black',
@@ -214,7 +214,6 @@
           stickyScroll: {
             enabled: false,
           },
-          placeholder: `Nothing to show yet... Generate ${isJson ? 'Types' : 'Data'}.`,
           minimap: {
             enabled: false,
           },
@@ -241,12 +240,25 @@
       />
 
       <div
-        v-else
+        v-if="!monaco"
         class="flex flex-auto flex-col items-center justify-center gap-2"
       >
         <span class="i-hugeicons:reload size-4 animate-spin" />
         <p class="text-sm">
           Loading Editor...
+        </p>
+      </div>
+
+      <div
+        v-if="!output && monaco"
+        class="flex flex-auto flex-col items-center justify-center gap-2"
+      >
+        <span
+          class="size-5"
+          :class="isJson ? 'i-hugeicons:typescript-01' : 'i-hugeicons:code'"
+        />
+        <p class="text-sm">
+          {{ `Nothing to show yet... Generate ${isJson ? 'Types' : 'Data'}.` }}
         </p>
       </div>
 
@@ -278,7 +290,7 @@ const { data: output, execute, status, error, clear } = await useLazyAsyncData(
     method: 'POST',
     timeout: 30000,
   }),
-  { server: false, immediate: false },
+  { server: false, immediate: false, deep: false, transform: data => data as string },
 )
 
 const disableActionButton = computed(() =>
