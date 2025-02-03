@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.message.split(':')[1].split('0')[2] }}
+          {{ error.message.replace('[POST] "/api/generate":', '').replace(/400|500|<no response>/, '') }}
         </p>
       </div>
 
@@ -142,9 +142,9 @@
     <div
       :class="{
         'fixed left-1/2 top-1/2 z-50 w-[95vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 transform shadow-2xl': isExpanded,
-        'relative min-h-lg ': !isExpanded,
+        'relative': !isExpanded,
       }"
-      class="flex flex-col justify-between gap-4 border border-white rounded-lg p-4 transition-all duration-300 ease"
+      class="min-h-lg flex flex-col justify-between gap-4 border border-white rounded-lg p-4 transition-all duration-300 ease"
     >
 
       <div class="w-full flex items-center justify-between gap-4">
@@ -241,7 +241,7 @@
 
       <div
         v-if="!monaco"
-        class="flex flex-auto flex-col items-center justify-center gap-2"
+        class="flex flex-auto flex-col items-center justify-center gap-2 bg-black"
       >
         <span class="i-hugeicons:reload size-4 animate-spin" />
         <p class="text-sm">
@@ -251,7 +251,7 @@
 
       <div
         v-if="!output && monaco"
-        class="flex flex-auto flex-col items-center justify-center gap-2"
+        class="flex flex-auto flex-col items-center justify-center gap-2 bg-black"
       >
         <span
           class="size-5"
