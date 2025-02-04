@@ -269,6 +269,7 @@
 </template>
 
 <script setup lang="ts">
+import type { GoogleGenerativeAIError } from '@google/generative-ai'
 import type { NuxtError, AsyncData } from '#app'
 
 const typeOrJson = ref<string>()
@@ -292,8 +293,8 @@ const { data: output, execute, status, error, clear } = await useAsyncData(
     method: 'POST',
     timeout: 30000,
   }),
-  { server: false, immediate: false, deep: false },
-) as AsyncData<string | undefined, NuxtError<unknown>>
+  { server: false, immediate: false },
+) as AsyncData<string | undefined, NuxtError<Error | GoogleGenerativeAIError>>
 
 const disableActionButton = computed(() =>
   (status.value === 'pending')
