@@ -158,7 +158,7 @@ export default defineEventHandler(async (event) => {
     if (matchedError) {
       return sendError(event, createError({
         statusCode: matchedError.code,
-        statusMessage: matchedError.message,
+        statusMessage: matchedError.statusMessage,
         message: matchedError.message,
       }))
     }
@@ -176,7 +176,11 @@ export default defineEventHandler(async (event) => {
       }))
     }
     // Generic error handler
-    return sendError(event, handleError(error))
+    return sendError(event, createError({
+      statusCode: 500,
+      statusMessage: 'UNKNOWN_ERROR',
+      message: 'Unknown Server Error',
+    }))
   }
 })
 
@@ -244,24 +248,5 @@ function handleTsCases({ rawData, instruction }: Omit<MessageParams, 'isJson'>):
     statusCode: 400,
     statusMessage: 'MISSING_TS_PARAMS',
     message: 'Missing required TS parameters',
-  })
-}
-
-/**
- * Universal error handler for unexpected exceptions
- * Ensures consistent error format across the API
- */
-function handleError(error: unknown): Error {
-  if (error instanceof Error) {
-    return createError({
-      statusCode: 500,
-      statusMessage: error.message,
-      message: error.message,
-    })
-  }
-  return createError({
-    statusCode: 500,
-    statusMessage: 'UNKNOWN_ERROR',
-    message: 'Unknown Server Error',
   })
 }
