@@ -2,12 +2,12 @@ import { GoogleGenerativeAI, GoogleGenerativeAIError } from '@google/generative-
 
 // Predefined AI error responses mapped to status codes
 const ERROR_MAP = {
-  'Invalid JSON provided': { code: 400, statusMessage: 'INVALID_JSON', message: 'Invalid JSON provided' },
-  'Invalid typescript type declaration provided': { code: 400, statusMessage: 'INVALID_TS', message: 'Invalid typescript type declaration provided' },
-  'Invalid format conversion attempted': { code: 400, statusMessage: 'INVALID_FORMAT', message: 'Invalid format conversion attempted' },
-  'Invalid instruction provided': { code: 400, statusMessage: 'INVALID_INSTRUCTION', message: 'Invalid instruction provided' },
-  'Failed to parse or generate data': { code: 500, statusMessage: 'INTERNAL_ERROR', message: 'Failed to parse or generate data' },
-  'Failed to understand instruction': { code: 500, statusMessage: 'INTERNAL_ERROR', message: 'Failed to understand instruction' },
+  'Invalid JSON provided': { code: 400, statusMessage: 'INVALID_JSON' },
+  'Invalid typescript type declaration provided': { code: 400, statusMessage: 'INVALID_TS' },
+  'Invalid format conversion attempted': { code: 400, statusMessage: 'INVALID_FORMAT' },
+  'Invalid instruction provided': { code: 400, statusMessage: 'INVALID_INSTRUCTION' },
+  'Failed to parse or generate data': { code: 500, statusMessage: 'INTERNAL_ERROR' },
+  'Failed to understand instruction': { code: 500, statusMessage: 'INTERNAL_ERROR' },
 } as const // Preserves literal types for type safety
 
 // Core system prompt defining conversion rules and constraints
@@ -75,7 +75,6 @@ export default defineEventHandler(async (event) => {
       return sendError(event, createError({
         statusCode: 400,
         statusMessage: 'MISSING_PARAMS',
-        message: 'Missing required parameters',
       }))
     }
 
@@ -100,14 +99,12 @@ export default defineEventHandler(async (event) => {
         return sendError(event, createError({
           statusCode: 400,
           statusMessage: 'JSON_CONVERSION_CONFLICT',
-          message: 'Code block type conflicts with JSON conversion',
         }))
       }
       if (!isJson && detectedType !== 'ts') {
         return sendError(event, createError({
           statusCode: 400,
           statusMessage: 'TS_CONVERSION_CONFLICT',
-          message: 'Code block type conflicts with TypeScript conversion',
         }))
       }
     }
@@ -122,7 +119,6 @@ export default defineEventHandler(async (event) => {
         return sendError(event, createError({
           statusCode: 400,
           statusMessage: 'INVALID_INSTRUCTION',
-          message: 'Invalid instruction provided',
         }))
       }
     }
@@ -159,7 +155,6 @@ export default defineEventHandler(async (event) => {
       return sendError(event, createError({
         statusCode: matchedError.code,
         statusMessage: matchedError.statusMessage,
-        message: matchedError.message,
       }))
     }
   
@@ -172,14 +167,12 @@ export default defineEventHandler(async (event) => {
       return sendError(event, createError({
         statusCode: 500,
         statusMessage: 'AI_SERVICE_ERROR',
-        message: 'AI Service Error: ',
       }))
     }
     // Generic error handler
     return sendError(event, createError({
       statusCode: 500,
       statusMessage: 'UNKNOWN_ERROR',
-      message: 'Unknown Server Error',
     }))
   }
 })
