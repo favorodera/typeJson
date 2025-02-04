@@ -2,12 +2,12 @@ import { GoogleGenerativeAI, GoogleGenerativeAIError } from '@google/generative-
 
 // Predefined AI error responses mapped to status codes
 const ERROR_MAP = {
-  'Invalid JSON provided': { code: 400, statusMessage: 'INVALID_JSON' },
-  'Invalid typescript type declaration provided': { code: 400, statusMessage: 'INVALID_TS' },
-  'Invalid format conversion attempted': { code: 400, statusMessage: 'INVALID_FORMAT' },
-  'Invalid instruction provided': { code: 400, statusMessage: 'INVALID_INSTRUCTION' },
-  'Failed to parse or generate data': { code: 500, statusMessage: 'INTERNAL_ERROR' },
-  'Failed to understand instruction': { code: 500, statusMessage: 'INTERNAL_ERROR' },
+  'Invalid JSON provided': { code: 400, message: 'INVALID_JSON' },
+  'Invalid typescript type declaration provided': { code: 400, message: 'INVALID_TS' },
+  'Invalid format conversion attempted': { code: 400, message: 'INVALID_FORMAT' },
+  'Invalid instruction provided': { code: 400, message: 'INVALID_INSTRUCTION' },
+  'Failed to parse or generate data': { code: 500, message: 'INTERNAL_ERROR' },
+  'Failed to understand instruction': { code: 500, message: 'INTERNAL_ERROR' },
 } as const // Preserves literal types for type safety
 
 // Core system prompt defining conversion rules and constraints
@@ -149,12 +149,12 @@ export default defineEventHandler(async (event) => {
       .replace(/```(json|typescript|ts)?\n?/g, '')
       .trim()
   
-    // Check for predefined error responses
+    // Check for predefined AI error responses
     const matchedError = ERROR_MAP[cleanedResponse as keyof typeof ERROR_MAP]
     if (matchedError) {
       return sendError(event, createError({
         statusCode: matchedError.code,
-        statusMessage: matchedError.statusMessage,
+        statusMessage: matchedError.message,
       }))
     }
   
@@ -210,14 +210,7 @@ function handleJsonCases({ rawData, instruction }: Pick<MessageParams, 'rawData'
   if (instruction) {
     return `Refactor previous typescript types with instruction: ${instruction}`
   }
-  if (hasValidData) {
-    return `Generate typescript type declarations based on: ${rawData}`
-  }
-  throw createError({
-    statusCode: 400,
-    statusMessage: 'MISSING_JSON_PARAMS',
-    message: 'Missing required JSON parameters',
-  })
+  return `Generate typescript type declarations based on: ${rawData}`
 }
 
 /**
@@ -234,12 +227,5 @@ function handleTsCases({ rawData, instruction }: Omit<MessageParams, 'isJson'>):
   if (hasValidData) {
     return `Generate type-safe JSON mocks from: ${rawData}`
   }
-  if (instruction) {
-    return `Refactor previous JSON with instruction: ${instruction}`
-  }
-  throw createError({
-    statusCode: 400,
-    statusMessage: 'MISSING_TS_PARAMS',
-    message: 'Missing required TS parameters',
-  })
+  return `Refactor previous JSON with instruction: ${instruction}`
 }
