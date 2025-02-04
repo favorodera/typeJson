@@ -269,7 +269,6 @@
 </template>
 
 <script setup lang="ts">
-import type { NuxtError, AsyncData } from '#app'
 
 const typeOrJson = ref<string>()
 const instruction = ref<string>()
@@ -293,7 +292,7 @@ const { data: output, execute, status, error, clear } = await useAsyncData(
     timeout: 30000,
   }),
   { server: false, immediate: false },
-) as AsyncData<string | undefined, NuxtError<unknown>>
+)
 
 const disableActionButton = computed(() =>
   (status.value === 'pending')
