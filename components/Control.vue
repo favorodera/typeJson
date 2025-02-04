@@ -128,12 +128,12 @@
       </div>
 
       <div
-        v-if="error"
+        v-if="error && error.statusMessage"
         class="flex items-center gap-2 text-sm text-red-500"
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.statusMessage ? error.statusMessage : 'Unknown Error' }}
+          {{ error.statusMessage }}
         </p>
       </div>
 
