@@ -293,7 +293,7 @@ const { data: output, execute, status, error, clear } = await useAsyncData(
     timeout: 30000,
   }),
   { server: false, immediate: false },
-) as AsyncData<string, NuxtError<{
+) as AsyncData<string | undefined, NuxtError<{
   statusMessage: string
   statusCode: number
   stack: Array<unknown>
