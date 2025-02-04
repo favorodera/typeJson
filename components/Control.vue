@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ formatErrorMessage(error.message) }}
+          {{ error.statusMessage ?? 'Unknown Error' }}
         </p>
       </div>
 
@@ -269,6 +269,8 @@
 </template>
 
 <script setup lang="ts">
+import type { NuxtError, AsyncData } from '#app'
+
 const typeOrJson = ref<string>()
 const instruction = ref<string>()
 const isJson = ref(false)
@@ -291,17 +293,13 @@ const { data: output, execute, status, error, clear } = await useLazyAsyncData(
     timeout: 30000,
   }),
   { server: false, immediate: false, deep: false },
-)
+) as AsyncData<string, NuxtError<unknown>>
 
 const disableActionButton = computed(() =>
   (status.value === 'pending')
   || (!instruction.value && !typeOrJson.value)
   || hasEditorErrors.value,
 )
-
-function formatErrorMessage(errorMessage: string) {
-  return errorMessage.replace(/\[POST\] "\/api\/generate":/, '').replace(/400|500|<no response>/, '')
-}
 
 function textareaAutoGrow() {
   if (!instructionTextarea.value) return
