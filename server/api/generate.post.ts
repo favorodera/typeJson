@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
       return createError({
         statusCode: 400,
         statusMessage: 'Missing required parameters',
+        message: 'Missing required parameters',
       })
     }
 
@@ -99,12 +100,14 @@ export default defineEventHandler(async (event) => {
         return createError({
           statusCode: 400,
           statusMessage: 'Code block type conflicts with JSON conversion',
+          message: 'Code block type conflicts with JSON conversion',
         })
       }
       if (!isJson && detectedType !== 'ts') {
         return createError({
           statusCode: 400,
           statusMessage: 'Code block type conflicts with TypeScript conversion',
+          message: 'Code block type conflicts with TypeScript conversion',
         })
       }
     }
@@ -119,6 +122,7 @@ export default defineEventHandler(async (event) => {
         return createError({
           statusCode: 400,
           statusMessage: 'Invalid instruction provided',
+          message: 'Invalid instruction provided',
         })
       }
     }
@@ -155,6 +159,7 @@ export default defineEventHandler(async (event) => {
       return createError({
         statusCode: matchedError.code,
         statusMessage: matchedError.message,
+        message: matchedError.message,
       })
     }
   
@@ -167,6 +172,7 @@ export default defineEventHandler(async (event) => {
       return sendError(event, createError({
         statusCode: 500,
         statusMessage: 'AI Service Error',
+        message: 'AI Service Error: ',
       }))
     }
     // Generic error handler
@@ -248,10 +254,12 @@ function handleError(error: unknown): Error {
     return createError({
       statusCode: 500,
       statusMessage: error.message,
+      message: error.message,
     })
   }
   return createError({
     statusCode: 500,
     statusMessage: 'Unknown Server Error',
+    message: 'Unknown Server Error',
   })
 }
