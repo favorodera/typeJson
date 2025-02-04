@@ -1,75 +1,16 @@
-# Nuxt Minimal Starter
+# TypeJson
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+TypeJson is a tool for converting between JSON and TypeScript type declarations and vice versa.
 
-## Setup
+###
 
-Make sure to install dependencies:
+# Features
 
-```bash
-# npm
-npm install
+- Bi-Directional conversion between JSON and TypeScript type declarations
+- Support for type-safe and realistic mock data generation from TypeScript type declarations
+- Refactor generated types/JSON via natural language instructions
+- Seamless TS/JSON switching
+- Syntax highlighting
+- Real-time validation
 
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+###
