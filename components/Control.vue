@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.statusMessage ?? 'Unknown Error' }}
+          {{ error.statusMessage ? error.statusMessage : 'Unknown Error' }}
         </p>
       </div>
 
@@ -293,7 +293,7 @@ const { data: output, execute, status, error, clear } = await useLazyAsyncData(
     timeout: 30000,
   }),
   { server: false, immediate: false, deep: false },
-) as AsyncData<string, NuxtError<unknown>>
+) as AsyncData<string | undefined, NuxtError<unknown>>
 
 const disableActionButton = computed(() =>
   (status.value === 'pending')
