@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.message }}
+          {{ formatErrorMessage(error.message) }}
         </p>
       </div>
 
@@ -290,7 +290,7 @@ const { data: output, execute, status, error, clear } = await useLazyAsyncData(
     method: 'POST',
     timeout: 30000,
   }),
-  { server: false, immediate: false, deep: false, transform: data => data as string },
+  { server: false, immediate: false, deep: false },
 )
 
 const disableActionButton = computed(() =>

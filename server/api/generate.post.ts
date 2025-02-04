@@ -2,12 +2,12 @@ import { GoogleGenerativeAI, GoogleGenerativeAIError } from '@google/generative-
 
 // Predefined AI error responses mapped to status codes
 const ERROR_MAP = {
-  'Invalid JSON provided': { code: 400, message: 'Invalid JSON provided' },
-  'Invalid typescript type declaration provided': { code: 400, message: 'Invalid typescript type declaration provided' },
-  'Invalid format conversion attempted': { code: 400, message: 'Invalid format conversion attempted' },
-  'Invalid instruction provided': { code: 400, message: 'Invalid instruction provided' },
-  'Failed to parse or generate data': { code: 500, message: 'Failed to parse or generate data' },
-  'Failed to understand instruction': { code: 500, message: 'Failed to understand instruction' },
+  'Invalid JSON provided': { code: 400, statusMessage: 'INVALID_JSON', message: 'Invalid JSON provided' },
+  'Invalid typescript type declaration provided': { code: 400, statusMessage: 'INVALID_TS', message: 'Invalid typescript type declaration provided' },
+  'Invalid format conversion attempted': { code: 400, statusMessage: 'INVALID_FORMAT', message: 'Invalid format conversion attempted' },
+  'Invalid instruction provided': { code: 400, statusMessage: 'INVALID_INSTRUCTION', message: 'Invalid instruction provided' },
+  'Failed to parse or generate data': { code: 500, statusMessage: 'INTERNAL_ERROR', message: 'Failed to parse or generate data' },
+  'Failed to understand instruction': { code: 500, statusMessage: 'INTERNAL_ERROR', message: 'Failed to understand instruction' },
 } as const // Preserves literal types for type safety
 
 // Core system prompt defining conversion rules and constraints
@@ -72,11 +72,11 @@ export default defineEventHandler(async (event) => {
 
     // Validate required parameters
     if (!rawData && !instruction) {
-      return createError({
+      return sendError(event, createError({
         statusCode: 400,
-        statusMessage: 'Missing required parameters',
+        statusMessage: 'MISSING_PARAMS',
         message: 'Missing required parameters',
-      })
+      }))
     }
 
     let detectedType: 'json' | 'ts' | 'unknown' = 'unknown'
@@ -97,18 +97,18 @@ export default defineEventHandler(async (event) => {
     // Validate that code block type matches conversion direction
     if (detectedType !== 'unknown') {
       if (isJson && detectedType !== 'json') {
-        return createError({
+        return sendError(event, createError({
           statusCode: 400,
-          statusMessage: 'Code block type conflicts with JSON conversion',
+          statusMessage: 'JSON_CONVERSION_CONFLICT',
           message: 'Code block type conflicts with JSON conversion',
-        })
+        }))
       }
       if (!isJson && detectedType !== 'ts') {
-        return createError({
+        return sendError(event, createError({
           statusCode: 400,
-          statusMessage: 'Code block type conflicts with TypeScript conversion',
+          statusMessage: 'TS_CONVERSION_CONFLICT',
           message: 'Code block type conflicts with TypeScript conversion',
-        })
+        }))
       }
     }
 
@@ -119,11 +119,11 @@ export default defineEventHandler(async (event) => {
         : /(generate|create|convert|output|make|need|run)\s+(typescript|type|interface|ts|dummy|mock)/i
 
       if (forbiddenPattern.test(instruction)) {
-        return createError({
+        return sendError(event, createError({
           statusCode: 400,
-          statusMessage: 'Invalid instruction provided',
+          statusMessage: 'INVALID_INSTRUCTION',
           message: 'Invalid instruction provided',
-        })
+        }))
       }
     }
 
@@ -156,22 +156,22 @@ export default defineEventHandler(async (event) => {
     // Check for predefined error responses
     const matchedError = ERROR_MAP[cleanedResponse as keyof typeof ERROR_MAP]
     if (matchedError) {
-      return createError({
+      return sendError(event, createError({
         statusCode: matchedError.code,
         statusMessage: matchedError.message,
         message: matchedError.message,
-      })
+      }))
     }
   
     // Return successful conversion result
     return cleanedResponse
   }
   catch (error) {
-    // Handle specific Gemini API errors
+    // Handle Gemini API errors
     if (error instanceof GoogleGenerativeAIError) {
       return sendError(event, createError({
         statusCode: 500,
-        statusMessage: 'AI Service Error',
+        statusMessage: 'AI_SERVICE_ERROR',
         message: 'AI Service Error: ',
       }))
     }
@@ -218,7 +218,8 @@ function handleJsonCases({ rawData, instruction }: Pick<MessageParams, 'rawData'
   }
   throw createError({
     statusCode: 400,
-    statusMessage: 'Missing JSON data or instruction',
+    statusMessage: 'MISSING_JSON_PARAMS',
+    message: 'Missing required JSON parameters',
   })
 }
 
@@ -241,7 +242,8 @@ function handleTsCases({ rawData, instruction }: Omit<MessageParams, 'isJson'>):
   }
   throw createError({
     statusCode: 400,
-    statusMessage: 'Missing required TS parameters',
+    statusMessage: 'MISSING_TS_PARAMS',
+    message: 'Missing required TS parameters',
   })
 }
 
@@ -259,7 +261,7 @@ function handleError(error: unknown): Error {
   }
   return createError({
     statusCode: 500,
-    statusMessage: 'Unknown Server Error',
+    statusMessage: 'UNKNOWN_ERROR',
     message: 'Unknown Server Error',
   })
 }
