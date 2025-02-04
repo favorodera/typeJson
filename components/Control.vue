@@ -281,7 +281,7 @@ const tempInstruction = ref<string>()
 const hasEditorErrors = ref(false)
 const monaco = useMonaco()
 
-const { data: output, execute, status, error, clear } = await useLazyAsyncData(
+const { data: output, execute, status, error, clear } = await useAsyncData(
   'generate',
   () => $fetch('/api/generate', {
     body: {
