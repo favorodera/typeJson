@@ -133,7 +133,7 @@
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error }}
+          {{ error.statusMessage ?? 'UNKNOWN_ERROR' }}
         </p>
       </div>
 
