@@ -128,12 +128,12 @@
       </div>
 
       <div
-        v-if="error"
+        v-if="error && error.data"
         class="flex items-center gap-2 text-sm text-red-500"
       >
         <span class="i-hugeicons:alert-01" />
         <p>
-          {{ error.statusMessage ?? 'UNKNOWN_ERROR' }}
+          {{ error.data.data.message }}
         </p>
       </div>
 
@@ -269,6 +269,7 @@
 </template>
 
 <script setup lang="ts">
+import type { AsyncData, NuxtError } from '#app'
 
 const typeOrJson = ref<string>()
 const instruction = ref<string>()
@@ -292,7 +293,12 @@ const { data: output, execute, status, error, clear } = await useAsyncData(
     timeout: 30000,
   }),
   { server: false, immediate: false },
-)
+) as AsyncData<string, NuxtError<{
+  statusMessage: string
+  statusCode: number
+  stack: Array<unknown>
+  data: { code: string, message: string }
+}>>
 
 const disableActionButton = computed(() =>
   (status.value === 'pending')

@@ -2,13 +2,37 @@ import { GoogleGenerativeAI, GoogleGenerativeAIError } from '@google/generative-
 
 // Predefined AI error responses mapped to status codes
 const ERROR_MAP = {
-  'Invalid JSON provided': { code: 400, message: 'INVALID_JSON' },
-  'Invalid typescript type declaration provided': { code: 400, message: 'INVALID_TS' },
-  'Invalid format conversion attempted': { code: 400, message: 'INVALID_FORMAT' },
-  'Invalid instruction provided': { code: 400, message: 'INVALID_INSTRUCTION' },
-  'Failed to parse or generate data': { code: 500, message: 'INTERNAL_ERROR' },
-  'Failed to understand instruction': { code: 500, message: 'INTERNAL_ERROR' },
-} as const // Preserves literal types for type safety
+  'Invalid JSON provided': {
+    statusCode: 400,
+    code: 'INVALID_JSON',
+    message: 'Invalid JSON structure provided',
+  },
+  'Invalid typescript type declaration provided': {
+    statusCode: 400,
+    code: 'INVALID_TS',
+    message: 'Invalid TypeScript type declaration',
+  },
+  'Invalid format conversion attempted': {
+    statusCode: 400,
+    code: 'INVALID_FORMAT',
+    message: 'Cannot convert between identical formats',
+  },
+  'Invalid instruction provided': {
+    statusCode: 400,
+    code: 'INVALID_INSTRUCTION',
+    message: 'Unprocessable instruction provided',
+  },
+  'Failed to parse or generate data': {
+    statusCode: 500,
+    code: 'INTERNAL_ERROR',
+    message: 'Data processing failed',
+  },
+  'Failed to understand instruction': {
+    statusCode: 500,
+    code: 'INTERNAL_ERROR',
+    message: 'Instruction processing failed',
+  },
+} as const
 
 // Core system prompt defining conversion rules and constraints
 const SYSTEM_INSTRUCTION = `
@@ -74,7 +98,11 @@ export default defineEventHandler(async (event) => {
     if (!rawData && !instruction) {
       return sendError(event, createError({
         statusCode: 400,
-        statusMessage: 'MISSING_PARAMS',
+        statusMessage: 'VALIDATION_ERROR',
+        data: {
+          code: 'MISSING_PARAMS',
+          message: 'RawData or instruction are required',
+        },
       }))
     }
 
@@ -98,29 +126,36 @@ export default defineEventHandler(async (event) => {
       if (isJson && detectedType !== 'json') {
         return sendError(event, createError({
           statusCode: 400,
-          statusMessage: 'JSON_CONVERSION_CONFLICT',
+          statusMessage: 'VALIDATION_ERROR',
+          data: {
+            code: 'JSON_CONVERSION_CONFLICT',
+            message: 'Request and input mismatch',
+          },
         }))
       }
       if (!isJson && detectedType !== 'ts') {
         return sendError(event, createError({
           statusCode: 400,
-          statusMessage: 'TS_CONVERSION_CONFLICT',
+          statusMessage: 'VALIDATION_ERROR',
+          data: {
+            code: 'TS_CONVERSION_CONFLICT',
+            message: 'Request and input mismatch',
+          },
         }))
       }
     }
 
     // Validate that instruction doesn't request same-format conversion
-    if (instruction) {
-      const forbiddenPattern = isJson
-        ? /(generate|create|convert|output|make|need|run)\s+(json|mock|data|dummy)/i
-        : /(generate|create|convert|output|make|need|run)\s+(typescript|type|interface|ts|dummy|mock)/i
+    const forbiddenPattern = isJson
+      ? /(generate|create|convert|output|make|need|run)\s+(json|mock|data|dummy)/i
+      : /(generate|create|convert|output|make|need|run)\s+(typescript|type|interface|ts|dummy|mock)/i
 
-      if (forbiddenPattern.test(instruction)) {
-        return sendError(event, createError({
-          statusCode: 400,
-          statusMessage: 'INVALID_INSTRUCTION',
-        }))
-      }
+    if (instruction && forbiddenPattern.test(instruction)) {
+      return sendError(event, createError({
+        statusCode: 400,
+        statusMessage: 'VALIDATION_ERROR',
+        data: ERROR_MAP['Invalid instruction provided'],
+      }))
     }
 
     // Initialize Gemini AI model with system instructions
@@ -153,8 +188,12 @@ export default defineEventHandler(async (event) => {
     const matchedError = ERROR_MAP[cleanedResponse as keyof typeof ERROR_MAP]
     if (matchedError) {
       return sendError(event, createError({
-        statusCode: matchedError.code,
-        statusMessage: matchedError.message,
+        statusCode: matchedError.statusCode,
+        statusMessage: 'AI_VALIDATION_ERROR',
+        data: {
+          code: matchedError.code,
+          message: matchedError.message,
+        },
       }))
     }
   
@@ -166,13 +205,21 @@ export default defineEventHandler(async (event) => {
     if (error instanceof GoogleGenerativeAIError) {
       return sendError(event, createError({
         statusCode: 500,
-        statusMessage: 'AI_SERVICE_ERROR',
+        statusMessage: 'SERVICE_ERROR',
+        data: {
+          code: 'AI_SERVICE_ERROR',
+          message: 'AI service unavailable',
+        },
       }))
     }
     // Generic error handler
     return sendError(event, createError({
       statusCode: 500,
-      statusMessage: 'UNKNOWN_ERROR',
+      statusMessage: 'SERVER_ERROR',
+      data: {
+        code: 'UNKNOWN_ERROR',
+        message: 'An unexpected error occurred',
+      },
     }))
   }
 })
